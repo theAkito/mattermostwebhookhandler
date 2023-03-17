@@ -32,3 +32,6 @@ htmldocs/
 # Built Visual Studio Code Extensions
 *.vsix
 
+# ---> Custom
+/mattermostwebhookhandler
+/mattermostwebhookhandler.json
