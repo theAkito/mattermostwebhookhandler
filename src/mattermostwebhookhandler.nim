@@ -243,7 +243,7 @@ when isMainModule:
                 of "help":
                   let resp = constructWebhookFromMattermostResponse(
                     mUsername,
-                    &"""Following Categories are available: """ & lineEnd.repeat(2) & mContexts.join($lineEnd),
+                    &"""Following Categories are available: """ & lineEnd.repeat(2) & mContexts.mapIt(it.categoryDisplayName).join($lineEnd),
                     data.channelID,
                     mIconURL
                   )
