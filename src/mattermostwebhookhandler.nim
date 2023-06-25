@@ -61,6 +61,11 @@ type
 
 newConsoleLogger(defineLogLevel(), logMsgPrefix & logMsgInter & "master" & logMsgSuffix).addHandler
 
+func first(s: openArray[MattermostInstanceContext], pred: proc(x: MattermostInstanceContext): bool {.closure.}): MattermostInstanceContext {.inline, effectsOf: pred.} =
+  for i in 0..<s.len:
+    if s[i].pred:
+      return s[i]
+
 func constructWebhookFromMattermost(form: StringTableRef): WebhookFromMattermost {.gcsafe.} =
   WebhookFromMattermost(
     token: form["token"],
@@ -226,45 +231,46 @@ when isMainModule:
           mBearerToken = "Bearer " & config.mattermost.identity.authentication.token
           mUsername = config.mattermost.identity.username
           mIconURL = config.mattermost.identity.iconURL
+          context = mContexts.first do (x: MattermostInstanceContext) -> bool:
+            x.categoryDisplayName.toLowerAscii == data.text.toLowerAscii
         block authorised:
-          for context in mContexts:
-            if context.token != data.token: continue
-            if context.categoryDisplayName.toLowerAscii == data.text.toLowerAscii:
-              let resp = constructWebhookFromMattermostResponse(
-                mUsername,
-                &"""Added to Category "{data.text}"!""",
-                data.channelID,
-                mIconURL
-              )
-              setupChannels(config.mattermost.instance.url, mBearerToken, data.userID, context.teamID, context.categoryDisplayName, context.channelIDs)
-              ctx.send(%resp, Http200)
-            else:
-              case data.text.toLowerAscii
-                of "help":
-                  let resp = constructWebhookFromMattermostResponse(
-                    mUsername,
-                    &"""Following Categories are available: """ & lineEnd.repeat(2) & mContexts.mapIt(it.categoryDisplayName).join($lineEnd),
-                    data.channelID,
-                    mIconURL
-                  )
-                  ctx.send(%resp, Http200)
-                of string.default:
-                  let resp = constructWebhookFromMattermostResponse(
-                    mUsername,
-                    &"""Do you want to join a specific Category? If yes, then send the following message: /joincat <Category Name>{lineEnd}To get a list of all available Categories, send the following message: /joincat help""",
-                    data.channelID,
-                    mIconURL
-                  )
-                  ctx.send(%resp, Http200)
-                else:
-                  let resp = constructWebhookFromMattermostResponse(
-                    mUsername,
-                    &"""The Category "{data.text}" is unavailable. To get a list of all available Categories, send the following message: /joincat help""",
-                    data.channelID,
-                    mIconURL
-                  )
-                  ctx.send(%resp, Http200)
-            break authorised
+          if not mContexts.anyIt(it.token == data.token): ctx.send("Unauthorised", Http401)
+          elif context.categoryDisplayName.toLowerAscii == data.text.toLowerAscii:
+            let resp = constructWebhookFromMattermostResponse(
+              mUsername,
+              &"""Added to Category "{data.text}"!""",
+              data.channelID,
+              mIconURL
+            )
+            setupChannels(config.mattermost.instance.url, mBearerToken, data.userID, context.teamID, context.categoryDisplayName, context.channelIDs)
+            ctx.send(%resp, Http200)
+          else:
+            case data.text.toLowerAscii
+              of "help":
+                let resp = constructWebhookFromMattermostResponse(
+                  mUsername,
+                  &"""Following Categories are available: """ & lineEnd.repeat(2) & mContexts.mapIt(it.categoryDisplayName).join($lineEnd),
+                  data.channelID,
+                  mIconURL
+                )
+                ctx.send(%resp, Http200)
+              of string.default:
+                let resp = constructWebhookFromMattermostResponse(
+                  mUsername,
+                  &"""Do you want to join a specific Category? If yes, then send the following message: /joincat <Category Name>{lineEnd}To get a list of all available Categories, send the following message: /joincat help""",
+                  data.channelID,
+                  mIconURL
+                )
+                ctx.send(%resp, Http200)
+              else:
+                let resp = constructWebhookFromMattermostResponse(
+                  mUsername,
+                  &"""The Category "{data.text}" is unavailable. To get a list of all available Categories, send the following message: /joincat help""",
+                  data.channelID,
+                  mIconURL
+                )
+                ctx.send(%resp, Http200)
+          break authorised
           ctx.send("Unauthorised", Http401)
       except CatchableError:
         error """["/joincat/add" -> post] Error occurred: """ & getCurrentExceptionMsg()
