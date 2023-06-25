@@ -233,45 +233,42 @@ when isMainModule:
           mIconURL = config.mattermost.identity.iconURL
           context = mContexts.first do (x: MattermostInstanceContext) -> bool:
             x.categoryDisplayName.toLowerAscii == data.text.toLowerAscii
-        block authorised:
-          if not mContexts.anyIt(it.token == data.token): ctx.send("Unauthorised", Http401)
-          elif context.categoryDisplayName.toLowerAscii == data.text.toLowerAscii:
-            let resp = constructWebhookFromMattermostResponse(
-              mUsername,
-              &"""Added to Category "{data.text}"!""",
-              data.channelID,
-              mIconURL
-            )
-            setupChannels(config.mattermost.instance.url, mBearerToken, data.userID, context.teamID, context.categoryDisplayName, context.channelIDs)
-            ctx.send(%resp, Http200)
-          else:
-            case data.text.toLowerAscii
-              of "help":
-                let resp = constructWebhookFromMattermostResponse(
-                  mUsername,
-                  &"""Following Categories are available: """ & lineEnd.repeat(2) & mContexts.mapIt(it.categoryDisplayName).join($lineEnd),
-                  data.channelID,
-                  mIconURL
-                )
-                ctx.send(%resp, Http200)
-              of string.default:
-                let resp = constructWebhookFromMattermostResponse(
-                  mUsername,
-                  &"""Do you want to join a specific Category? If yes, then send the following message: /joincat <Category Name>{lineEnd}To get a list of all available Categories, send the following message: /joincat help""",
-                  data.channelID,
-                  mIconURL
-                )
-                ctx.send(%resp, Http200)
-              else:
-                let resp = constructWebhookFromMattermostResponse(
-                  mUsername,
-                  &"""The Category "{data.text}" is unavailable. To get a list of all available Categories, send the following message: /joincat help""",
-                  data.channelID,
-                  mIconURL
-                )
-                ctx.send(%resp, Http200)
-          break authorised
-          ctx.send("Unauthorised", Http401)
+        if not mContexts.anyIt(it.token == data.token): ctx.send("Unauthorised", Http401)
+        elif context.categoryDisplayName.toLowerAscii == data.text.toLowerAscii:
+          let resp = constructWebhookFromMattermostResponse(
+            mUsername,
+            &"""Added to Category "{data.text}"!""",
+            data.channelID,
+            mIconURL
+          )
+          setupChannels(config.mattermost.instance.url, mBearerToken, data.userID, context.teamID, context.categoryDisplayName, context.channelIDs)
+          ctx.send(%resp, Http200)
+        else:
+          case data.text.toLowerAscii
+            of "help":
+              let resp = constructWebhookFromMattermostResponse(
+                mUsername,
+                &"""Following Categories are available: """ & lineEnd.repeat(2) & mContexts.mapIt(it.categoryDisplayName).join($lineEnd),
+                data.channelID,
+                mIconURL
+              )
+              ctx.send(%resp, Http200)
+            of string.default:
+              let resp = constructWebhookFromMattermostResponse(
+                mUsername,
+                &"""Do you want to join a specific Category? If yes, then send the following message: /joincat <Category Name>{lineEnd}To get a list of all available Categories, send the following message: /joincat help""",
+                data.channelID,
+                mIconURL
+              )
+              ctx.send(%resp, Http200)
+            else:
+              let resp = constructWebhookFromMattermostResponse(
+                mUsername,
+                &"""The Category "{data.text}" is unavailable. To get a list of all available Categories, send the following message: /joincat help""",
+                data.channelID,
+                mIconURL
+              )
+              ctx.send(%resp, Http200)
       except CatchableError:
         error """["/joincat/add" -> post] Error occurred: """ & getCurrentExceptionMsg()
         ctx.send("Error occurred: " & getCurrentExceptionMsg(), Http500)
