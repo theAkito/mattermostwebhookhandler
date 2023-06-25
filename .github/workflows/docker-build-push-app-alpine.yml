@@ -23,14 +23,20 @@ jobs:
         with:
           images: |
             akito13/mattermost-webhook-handler
+          flavor: |
+            latest=true
+            prefix=
+            suffix=
           tags: |
+            type=edge,branch=master
+            type=raw,value=alpine
             type=schedule
             type=ref,event=branch
             type=ref,event=pr
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
-            type=sha
+            type=sha,prefix=,format=long
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
