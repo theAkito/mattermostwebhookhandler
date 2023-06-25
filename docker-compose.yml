@@ -28,4 +28,4 @@ services:
     env_file:
       - ./mattermostwebhookhandler.env
     volumes:
-      - ./mattermostwebhookhandler.json:/var/lib/postgresql/data
+      - ./mattermostwebhookhandler.json:/mattermostwebhookhandler.json
