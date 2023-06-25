@@ -59,13 +59,6 @@ type
     extra_responses: Option[JsonNode]
     props: Option[JsonNode]
 
-const
-  # HTTP
-  headerKeyAuth = "Authorization"
-  headerKeyContentType = "Content-Type"
-  headerKeyAccept = "Accept"
-  headerValueContentType = "application/json"
-
 newConsoleLogger(defineLogLevel(), logMsgPrefix & logMsgInter & "master" & logMsgSuffix).addHandler
 
 func constructWebhookFromMattermost(form: StringTableRef): WebhookFromMattermost {.gcsafe.} =
@@ -226,8 +219,8 @@ when isMainModule:
 
   "/joincat/add" -> post:
     try:
-      let data = ctx.parseForm.constructWebhookFromMattermost
       let
+        data = ctx.parseForm.constructWebhookFromMattermost
         mContexts = config.mattermost.instance.contexts
         mBearerToken = "Bearer " & config.mattermost.identity.authentication.token
         mUsername = config.mattermost.identity.username
