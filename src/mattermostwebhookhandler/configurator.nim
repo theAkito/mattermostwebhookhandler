@@ -83,7 +83,7 @@ var
   configServer = Server(
     port: 3000
   )
-var config* {.threadvar.}: MasterConfig
+  config*: MasterConfig
 
 func pretty(node: JsonNode): string = node.pretty(configIndentation)
 
