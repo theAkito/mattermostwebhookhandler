@@ -15,11 +15,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. #
 #########################################################################
 
-FROM nimlang/nim:1.6.10-alpine AS build
+FROM nimlang/nim:1.6.12-alpine AS build
 
 WORKDIR /app
 
-COPY ./src .
+COPY . .
 
 RUN \
   nimble install -dy && \
