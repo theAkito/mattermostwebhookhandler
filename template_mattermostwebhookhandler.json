@@ -1,0 +1,26 @@
+{
+  "version": "0.1.0",
+  "server": {
+    "port": 3000
+  },
+  "mattermost": {
+    "identity": {
+      "authentication": {
+        "token": ""
+      },
+      "username": "",
+      "iconURL": ""
+    },
+    "instance": {
+      "url": "",
+      "contexts": [
+        {
+          "token": "",
+          "teamID": "",
+          "categoryDisplayName": "",
+          "channelIDs": []
+        }
+      ]
+    }
+  }
+}
